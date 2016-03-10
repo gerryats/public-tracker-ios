@@ -8,8 +8,15 @@
 
 import UIKit
 
+protocol CommentViewControllerDelegate
+{
+    func ownerCommentUpdated(newComment:String)
+}
+
 class CommentViewController: UIViewController, UITextViewDelegate
 {
+    var delegate :CommentViewControllerDelegate?
+    
     // MARK:- Outlets
     
     @IBOutlet var tvComment:UITextView!
@@ -206,6 +213,8 @@ class CommentViewController: UIViewController, UITextViewDelegate
             
             let picVC:AddAndSharePhotoViewController = self.storyboard?.instantiateViewControllerWithIdentifier("AddAndSharePhotoViewController") as! AddAndSharePhotoViewController
             
+            picVC.ownerComment = self.tvComment.text!
+            
             vcs.replaceObjectAtIndex(1, withObject: picVC)
             
             self.navigationController?.setViewControllers(((vcs.copy() as! NSArray) as! [UIViewController]), animated: true)
@@ -217,6 +226,8 @@ class CommentViewController: UIViewController, UITextViewDelegate
             let alertController:UIAlertController = UIAlertController(title: nil, message: "Comment updated.", preferredStyle: UIAlertControllerStyle.Alert)
             
             alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: { (alertAction) -> Void in
+                
+                self.delegate?.ownerCommentUpdated(self.tvComment.text!)
                 
                 self.navigationController?.popViewControllerAnimated(true)
             }))

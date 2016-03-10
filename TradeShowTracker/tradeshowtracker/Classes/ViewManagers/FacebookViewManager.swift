@@ -107,15 +107,17 @@ class FacebookViewManager: NSObject
     
     // MARK:- Share on Facebook
     
-    func shareImageOnFacebook(imageUrl:NSURL, fbUserDetail:NSDictionary, viewController:AddAndSharePhotoViewController)
+    func shareImageOnFacebook(imageUrl:NSURL, ownerComment comment:String, fbUserDetail:NSDictionary, viewController:AddAndSharePhotoViewController)
     {
         let content = FBSDKShareLinkContent()
         
-        content.contentURL = NSURL(string: "http://apptreetechnologies.com")//"http://stackoverflow.com/questions/31002389/facebook-native-share-dialog-in-swift")
+//        content.contentURL = NSURL(string: "http://apptreetechnologies.com")//"http://stackoverflow.com/questions/31002389/facebook-native-share-dialog-in-swift")
         
         content.imageURL = imageUrl //NSURL(string: "http://img0.mxstatic.com/wallpapers/26e7d2c961509ccc6ad6b04056494320_large.jpeg")
-        content.contentTitle = "Trade Show"
-        content.contentDescription = "TradeShowTracker"
+        
+        content.contentTitle = Utility.getCompanyName()
+        
+        content.contentDescription = comment
         
         let dialog : FBSDKShareDialog = FBSDKShareDialog()
         dialog.shareContent = content

@@ -35,7 +35,13 @@ class AWSViewManager: NSObject
     {
         // saving image temporary
         
-        let imageData = UIImageJPEGRepresentation(image, 0.0)
+        UIGraphicsBeginImageContextWithOptions(image.size, false, 0.0);
+        
+        image.drawInRect(CGRectMake(0, 0, image.size.width, image.size.height))
+        let newImage:UIImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext();
+        
+        let imageData = UIImageJPEGRepresentation(newImage, 0.0) // UIImagePNGRepresentation(image)//
         
         let filePath = NSTemporaryDirectory().stringByAppendingString("fileName.jpg")
         

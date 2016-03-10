@@ -9,7 +9,7 @@
 import UIKit
 import MobileCoreServices
 
-class AddAndSharePhotoViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, FBSDKSharingDelegate
+class AddAndSharePhotoViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, FBSDKSharingDelegate, CommentViewControllerDelegate
 {
     
     // MARK:- IBOutlet
@@ -22,7 +22,7 @@ class AddAndSharePhotoViewController: UIViewController, UIImagePickerControllerD
     var awsImagePath:String = ""
     var userDetail:NSDictionary = NSDictionary()
     
-    
+    var ownerComment:String = ""
     
     // MARK:- View Life Cycle
     
@@ -34,6 +34,12 @@ class AddAndSharePhotoViewController: UIViewController, UIImagePickerControllerD
         // Do any additional setup after loading the view.
         
         self.initialSetup()
+    }
+    
+    
+    override func viewWillAppear(animated: Bool)
+    {
+        super.viewWillAppear(animated)
     }
     
     
@@ -52,6 +58,13 @@ class AddAndSharePhotoViewController: UIViewController, UIImagePickerControllerD
     {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        
+        if segue.identifier == "editCommentSegue"
+        {
+            let cVC:CommentViewController = segue.destinationViewController as! CommentViewController
+            
+            cVC.delegate = self
+        }
     }
     
     
@@ -64,6 +77,11 @@ class AddAndSharePhotoViewController: UIViewController, UIImagePickerControllerD
         let editButton = UIBarButtonItem(title: "Edit", style: .Plain, target: self, action:"editButtonClicked")
         
         self.navigationItem.rightBarButtonItem = editButton
+        
+        if Utility.isEmptyString(ownerComment)
+        {
+            self.getComment()
+        }
     }
     
     
@@ -81,7 +99,7 @@ class AddAndSharePhotoViewController: UIViewController, UIImagePickerControllerD
         
         let url:NSURL = NSURL(string: Utility.getAWSImagePath(awsImagePath))!
         
-        FacebookViewManager.sharedInstance.shareImageOnFacebook(url, fbUserDetail: userDetail, viewController: self)
+        FacebookViewManager.sharedInstance.shareImageOnFacebook(url, ownerComment: ownerComment, fbUserDetail: userDetail, viewController: self)
     }
     
     
@@ -244,6 +262,8 @@ class AddAndSharePhotoViewController: UIViewController, UIImagePickerControllerD
                     
                     print("error: \(error)")
                     
+                    (UIApplication.sharedApplication().delegate as! AppDelegate).hideProgressHUD()
+                    
                     Utility.showServerErrorAlert(self)
                 })
         }
@@ -323,6 +343,63 @@ class AddAndSharePhotoViewController: UIViewController, UIImagePickerControllerD
     }
     
     
+    // MARK:- Get Comment
+    
+    func getComment()
+    {
+        (UIApplication.sharedApplication().delegate as! AppDelegate).showProgressHUD()
+        
+        APIViewManager.sharedInstance.getComment({ (responseDict) -> Void in
+            
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                
+                (UIApplication.sharedApplication().delegate as! AppDelegate).hideProgressHUD()
+                
+                if let errCode:Int = responseDict.valueForKey("error_code") as? Int
+                {
+//                    print("Response of get comment : \(responseDict)")
+                    
+                    if errCode == 0     // Comment received
+                    {
+                        if let comment:String = responseDict.valueForKey("comment") as? String
+                        {
+                            if Utility.trimString(comment).characters.count > 0
+                            {
+                                self.ownerComment = comment
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if let message:String = responseDict.valueForKey("message") as? String
+                        {
+                            Utility.showAlert(nil, message: message, viewController: self)
+                        }
+                            
+                        else
+                        {
+                            Utility.showServerErrorAlert(self)
+                        }
+                    }
+                }
+                    
+                else
+                {
+                    Utility.showServerErrorAlert(self)
+                }
+            })
+            }) { (error) -> Void in
+                
+                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    
+                    (UIApplication.sharedApplication().delegate as! AppDelegate).hideProgressHUD()
+                    
+                    Utility.showServerErrorAlert(self)
+                })
+        }
+    }
+    
+    
     
     // MARK:- FBSDKSharingDelegate
     
@@ -344,12 +421,23 @@ class AddAndSharePhotoViewController: UIViewController, UIImagePickerControllerD
         print("error description : \(error.description)\n")
         print("error localizedDescription : \(error.localizedDescription)")*/
         
+        (UIApplication.sharedApplication().delegate as! AppDelegate).hideProgressHUD()
+        
         Utility.showAlert("Sharing Failed", message: "Please try again.", viewController: self)
     }
     
     
     func sharerDidCancel(sharer: FBSDKSharing!)
     {
+        (UIApplication.sharedApplication().delegate as! AppDelegate).hideProgressHUD()
 //        print("Canceled")
+    }
+    
+    
+    // MARK:- Comment View Controller
+    
+    func ownerCommentUpdated(newComment: String)
+    {
+        ownerComment = newComment
     }
 }

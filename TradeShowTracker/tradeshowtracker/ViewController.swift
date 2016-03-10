@@ -135,7 +135,7 @@ class ViewController: UIViewController, UITextFieldDelegate
                     
                     if let errCode:Int = responseDict.valueForKey("error_code") as? Int
                     {
-//                        print("Response of login : \(responseDict)")
+                        print("Response of login : \(responseDict)")
                         
                         if errCode == 0     // Normal Login
                         {
