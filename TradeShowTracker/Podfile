@@ -1,0 +1,24 @@
+#platform :ios, '7.0'
+
+source 'https://github.com/CocoaPods/Specs.git'
+pod 'AWSS3'
+
+pod 'FBSDKCoreKit'
+pod 'FBSDKLoginKit'
+pod 'FBSDKShareKit'
+
+#pod 'MBProgressHUD', '~> 0.8'
+#pod 'Reachability', '~> 3.1.1'
+#pod 'Facebook-iOS-SDK', '4.1.0'
+#pod 'TPKeyboardAvoiding', '~> 1.2'
+#pod 'TTTAttributedLabel'
+#pod 'CrittercismSDK'
+
+
+
+
+
+ 
+   
+
+
